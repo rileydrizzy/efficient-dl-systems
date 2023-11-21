@@ -10,45 +10,59 @@ from hparams import config
 
 wandb.init(config=config, project="effdl_example", name="baseline")
 
+
 def compute_accuracy(preds, targets):
     result = (targets == preds).float().sum()
     return result
 
 
 def main():
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
-        transforms.Resize((224, 224)),
-    ])
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
+            transforms.Resize((224, 224)),
+        ]
+    )
 
-    train_dataset = CIFAR10(root='CIFAR10/train',
-                            train=True,
-                            transform=transform,
-                            download=False,
-                            )
+    train_dataset = CIFAR10(
+        root="CIFAR10/train",
+        train=True,
+        transform=transform,
+        download=False,
+    )
 
-    test_dataset = CIFAR10(root='CIFAR10/test',
-                           train=False,
-                           transform=transform,
-                           download=False,
-                           )
+    test_dataset = CIFAR10(
+        root="CIFAR10/test",
+        train=False,
+        transform=transform,
+        download=False,
+    )
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                               batch_size=config["batch_size"],
-                                               shuffle=True)
+    train_loader = torch.utils.data.DataLoader(
+        dataset=train_dataset, batch_size=config["batch_size"], shuffle=True
+    )
 
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
-                                              batch_size=config["batch_size"])
+    test_loader = torch.utils.data.DataLoader(
+        dataset=test_dataset, batch_size=config["batch_size"]
+    )
 
-    device = torch.device("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = resnet18(pretrained=False, num_classes=10, zero_init_residual=config["zero_init_residual"])
+    model = resnet18(
+        pretrained=False,
+        num_classes=10,
+        zero_init_residual=config["zero_init_residual"],
+    )
     model.to(device)
     wandb.watch(model)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config["learning_rate"], weight_decay=config["weight_decay"])
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=config["learning_rate"],
+        weight_decay=config["weight_decay"],
+    )
 
     for epoch in trange(config["epochs"]):
         for i, (images, labels) in enumerate(tqdm(train_loader)):
@@ -79,13 +93,18 @@ def main():
 
                 accuracy = compute_accuracy(torch.cat(all_preds), torch.cat(all_labels))
 
-                metrics = {'test_acc': accuracy, 'train_loss': loss}
-                wandb.log(metrics, step=epoch * len(train_dataset) + (i + 1) * config["batch_size"])
+                metrics = {"test_acc": accuracy, "train_loss": loss}
+                wandb.log(
+                    metrics,
+                    step=epoch * len(train_dataset) + (i + 1) * config["batch_size"],
+                )
     torch.save(model.state_dict(), "model.pt")
-
+    artifact = wandb.Artifact("resnet", type="model")
+    artifact.add_file("model.pt")
+    wandb.run.log_artifact(artifact)
     with open("run_id.txt", "w+") as f:
         print(wandb.run.id, file=f)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
