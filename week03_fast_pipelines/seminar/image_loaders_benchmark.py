@@ -76,19 +76,25 @@ class GetArray(BenchmarkTest):
         return imageio.imread(image_path)
 
 
-def benchmark(libraries: list, benchmarks: list, image_paths: list, num_runs: int, shuffle: bool) -> defaultdict:
+def benchmark(
+    libraries: list, benchmarks: list, image_paths: list, num_runs: int, shuffle: bool
+) -> defaultdict:
     images_per_second = defaultdict(dict)
     num_images = len(image_paths)
 
     for library in libraries:
         pbar = tqdm(total=len(benchmarks))
         for benchmark in benchmarks:
-            pbar.set_description("Current benchmark: {} | {}".format(library, benchmark))
+            pbar.set_description(
+                "Current benchmark: {} | {}".format(library, benchmark)
+            )
             if shuffle:
                 random.shuffle(image_paths)
             timer = Timer(lambda: benchmark.run(library, image_paths))
             run_times = timer.repeat(number=1, repeat=num_runs)
-            benchmark_images_per_second = [1 / (run_time / num_images) for run_time in run_times]
+            benchmark_images_per_second = [
+                1 / (run_time / num_images) for run_time in run_times
+            ]
             images_per_second[library][str(benchmark)] = benchmark_images_per_second
             pbar.update(1)
 
@@ -98,8 +104,12 @@ def benchmark(libraries: list, benchmarks: list, image_paths: list, num_runs: in
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Image reading libraries performance benchmark")
-    parser.add_argument("-d", "--data-dir", metavar="DIR", help="path to a directory with images")
+    parser = argparse.ArgumentParser(
+        description="Image reading libraries performance benchmark"
+    )
+    parser.add_argument(
+        "-d", "--data-dir", metavar="DIR", help="path to a directory with images"
+    )
     parser.add_argument(
         "-i",
         "--num_images",
@@ -109,13 +119,28 @@ def parse_args():
         help="number of images for benchmarking (default: 2000)",
     )
     parser.add_argument(
-        "-r", "--num_runs", default=5, type=int, metavar="N", help="number of runs for each benchmark (default: 5)"
+        "-r",
+        "--num_runs",
+        default=5,
+        type=int,
+        metavar="N",
+        help="number of runs for each benchmark (default: 5)",
     )
     parser.add_argument(
-        "--show-std", dest="show_std", action="store_true", help="show standard deviation for benchmark runs"
+        "--show-std",
+        dest="show_std",
+        action="store_true",
+        help="show standard deviation for benchmark runs",
     )
-    parser.add_argument("-p", "--print-package-versions", action="store_true", help="print versions of packages")
-    parser.add_argument("-s", "--shuffle", action="store_true", help="Shuffle the list of images.")
+    parser.add_argument(
+        "-p",
+        "--print-package-versions",
+        action="store_true",
+        help="print versions of packages",
+    )
+    parser.add_argument(
+        "-s", "--shuffle", action="store_true", help="Shuffle the list of images."
+    )
     return parser.parse_args()
 
 
@@ -135,7 +160,9 @@ def main():
 
     image_paths = get_image_paths(args.data_dir, args.num_images)
 
-    images_per_second = benchmark(libraries, benchmarks, image_paths, args.num_runs, args.shuffle)
+    images_per_second = benchmark(
+        libraries, benchmarks, image_paths, args.num_runs, args.shuffle
+    )
 
     pd.set_option("display.width", 1000)
     df = pd.DataFrame.from_dict(images_per_second)

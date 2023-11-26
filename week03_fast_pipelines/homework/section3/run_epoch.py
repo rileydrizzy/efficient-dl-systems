@@ -30,7 +30,9 @@ def get_train_loader() -> torch.utils.data.DataLoader:
     print(f"Train Data: {len(train_list)}")
     train_transforms = dataset.get_train_transforms()
     train_data = dataset.CatsDogsDataset(train_list, transform=train_transforms)
-    train_loader = DataLoader(dataset=train_data, batch_size=Settings.batch_size, shuffle=True)
+    train_loader = DataLoader(
+        dataset=train_data, batch_size=Settings.batch_size, shuffle=True
+    )
 
     return train_loader
 

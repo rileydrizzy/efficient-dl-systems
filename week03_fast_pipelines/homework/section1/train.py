@@ -28,7 +28,10 @@ def train_epoch(
 
         accuracy = ((outputs > 0.5) == labels).float().mean()
 
-        pbar.set_description(f"Loss: {round(loss.item(), 4)} " f"Accuracy: {round(accuracy.item() * 100, 4)}")
+        pbar.set_description(
+            f"Loss: {round(loss.item(), 4)} "
+            f"Accuracy: {round(accuracy.item() * 100, 4)}"
+        )
 
 
 def train():

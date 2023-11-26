@@ -44,7 +44,9 @@ def train(
                     y_pred = model(x_val)
                     loss = loss_fn(y_pred, y_val)
                     val_loss[i] = loss
-                    val_accuracy[i] = (torch.argmax(y_pred, dim=-1) == y_val).float().mean()
+                    val_accuracy[i] = (
+                        (torch.argmax(y_pred, dim=-1) == y_val).float().mean()
+                    )
 
             print(
                 f"Epoch: {epoch}, loss: {val_loss.mean().detach().cpu()}, "
@@ -91,7 +93,9 @@ def train_amp(
                     y_pred = model(x_val)
                     loss = loss_fn(y_pred, y_val)
                     val_loss[i] = loss
-                    val_accuracy[i] = (torch.argmax(y_pred, dim=-1) == y_val).float().mean()
+                    val_accuracy[i] = (
+                        (torch.argmax(y_pred, dim=-1) == y_val).float().mean()
+                    )
 
             print(
                 f"Epoch: {epoch}, loss: {val_loss.mean().detach().cpu()}, "
@@ -100,11 +104,16 @@ def train_amp(
     model.eval()
 
 
-def get_loaders(transforms_level: int = 1) -> tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
+def get_loaders(
+    transforms_level: int = 1,
+) -> tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
     if transforms_level == 1:
         # no transforms
         transform = torchvision.transforms.Compose(
-            [torchvision.transforms.ToTensor(), torchvision.transforms.Normalize((0.1307,), (0.3081,))]
+            [
+                torchvision.transforms.ToTensor(),
+                torchvision.transforms.Normalize((0.1307,), (0.3081,)),
+            ]
         )
     elif transforms_level == 2:
         # modest transforms
@@ -140,11 +149,19 @@ def get_loaders(transforms_level: int = 1) -> tuple[torch.utils.data.DataLoader,
             ]
         )
 
-    mnist_train = torchvision.datasets.MNIST("./mnist/", train=True, download=True, transform=transform)
-    mnist_val = torchvision.datasets.MNIST("./mnist/", train=False, download=True, transform=transform)
+    mnist_train = torchvision.datasets.MNIST(
+        "./mnist/", train=True, download=True, transform=transform
+    )
+    mnist_val = torchvision.datasets.MNIST(
+        "./mnist/", train=False, download=True, transform=transform
+    )
 
-    train_dataloader = torch.utils.data.DataLoader(mnist_train, batch_size=1024, shuffle=True)
-    val_dataloader = torch.utils.data.DataLoader(mnist_val, batch_size=1024, shuffle=False)
+    train_dataloader = torch.utils.data.DataLoader(
+        mnist_train, batch_size=1024, shuffle=True
+    )
+    val_dataloader = torch.utils.data.DataLoader(
+        mnist_val, batch_size=1024, shuffle=False
+    )
 
     return train_dataloader, val_dataloader
 

@@ -16,7 +16,15 @@ from torch.nn.parameter import Parameter
 
 
 class TransformerModel(nn.Module):
-    def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int, nlayers: int, dropout: float = 0.5):
+    def __init__(
+        self,
+        ntoken: int,
+        d_model: int,
+        nhead: int,
+        d_hid: int,
+        nlayers: int,
+        dropout: float = 0.5,
+    ):
         super().__init__()
         self.model_type = "Transformer"
         self.pos_encoder = PositionalEncoding(d_model, dropout)
@@ -56,7 +64,9 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
         position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model)
+        )
         pe = torch.zeros(max_len, 1, d_model)
         pe[:, 0, 0::2] = torch.sin(position * div_term)
         pe[:, 0, 1::2] = torch.cos(position * div_term)
@@ -113,7 +123,10 @@ class TransformerEncoderLayer(nn.Module):
         super(TransformerEncoderLayer, self).__setstate__(state)
 
     def forward(
-        self, src: Tensor, src_mask: Optional[Tensor] = None, src_key_padding_mask: Optional[Tensor] = None
+        self,
+        src: Tensor,
+        src_mask: Optional[Tensor] = None,
+        src_key_padding_mask: Optional[Tensor] = None,
     ) -> Tensor:
         r"""Pass the input through the encoder layer.
 
@@ -125,7 +138,9 @@ class TransformerEncoderLayer(nn.Module):
         Shape:
             see the docs in Transformer class.
         """
-        src2 = self.self_attn(src, src, src, attn_mask=src_mask, key_padding_mask=src_key_padding_mask)[0]
+        src2 = self.self_attn(
+            src, src, src, attn_mask=src_mask, key_padding_mask=src_key_padding_mask
+        )[0]
         src = src + self.dropout1(src2)
         src = self.norm1(src)
         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
@@ -166,7 +181,15 @@ class MultiheadAttention(nn.Module):
     bias_v: Optional[torch.Tensor]
 
     def __init__(
-        self, embed_dim, num_heads, dropout=0.0, bias=True, add_bias_kv=False, add_zero_attn=False, kdim=None, vdim=None
+        self,
+        embed_dim,
+        num_heads,
+        dropout=0.0,
+        bias=True,
+        add_bias_kv=False,
+        add_zero_attn=False,
+        kdim=None,
+        vdim=None,
     ):
         super(MultiheadAttention, self).__init__()
         self.embed_dim = embed_dim
@@ -177,7 +200,9 @@ class MultiheadAttention(nn.Module):
         self.num_heads = num_heads
         self.dropout = dropout
         self.head_dim = embed_dim // num_heads
-        assert self.head_dim * num_heads == self.embed_dim, "embed_dim must be divisible by num_heads"
+        assert (
+            self.head_dim * num_heads == self.embed_dim
+        ), "embed_dim must be divisible by num_heads"
 
         if self._qkv_same_embed_dim is False:
             self.q_proj_weight = Parameter(torch.Tensor(embed_dim, embed_dim))
@@ -229,7 +254,15 @@ class MultiheadAttention(nn.Module):
 
         super(MultiheadAttention, self).__setstate__(state)
 
-    def forward(self, query, key, value, key_padding_mask=None, need_weights=True, attn_mask=None):
+    def forward(
+        self,
+        query,
+        key,
+        value,
+        key_padding_mask=None,
+        need_weights=True,
+        attn_mask=None,
+    ):
         # type: (Tensor, Tensor, Tensor, Optional[Tensor], bool, Optional[Tensor]) -> Tuple[Tensor, Optional[Tensor]]
         r"""
         Args:

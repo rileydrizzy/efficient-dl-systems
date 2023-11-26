@@ -27,7 +27,9 @@ class Carvana(Dataset):
             :param path: path to the data folder
             :return: list with paths to all images
             """
-            images_dir = [join(path, f) for f in os.listdir(path) if isfile(join(path, f))]
+            images_dir = [
+                join(path, f) for f in os.listdir(path) if isfile(join(path, f))
+            ]
             images_dir.sort()
 
             return images_dir
@@ -56,11 +58,18 @@ class Carvana(Dataset):
 
 def get_train_data() -> torch.utils.data.DataLoader:
     train_dataset = Carvana(
-        root=".", transform=transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
+        root=".",
+        transform=transforms.Compose(
+            [transforms.Resize((256, 256)), transforms.ToTensor()]
+        ),
     )
 
     train_loader = torch.utils.data.DataLoader(
-        dataset=train_dataset, batch_size=128, shuffle=True, pin_memory=True, num_workers=4
+        dataset=train_dataset,
+        batch_size=128,
+        shuffle=True,
+        pin_memory=True,
+        num_workers=4,
     )
 
     return train_loader
@@ -78,7 +87,7 @@ def im_show(img_list: List[Tuple[torch.Tensor, torch.Tensor]]) -> None:
     fig, axes = plt.subplots(len(img_list), 2, figsize=(16, 16))
     fig.tight_layout()
 
-    for (idx, sample) in enumerate(img_list):
+    for idx, sample in enumerate(img_list):
         axes[idx][0].imshow(np.array(to_PIL(sample[0])))
         axes[idx][1].imshow(np.array(to_PIL(sample[1])))
         for ax in axes[idx]:
